@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo Application</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+
+        /* ===== EARTH BACKGROUND DRIFT ===== */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #e6d5b8, #cbb38a, #a67c52);
+            background-size: 300% 300%;
+            animation: sandDrift 25s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes sandDrift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== FLOATING JOURNAL CARD ===== */
+        .journal-card {
+            width: 680px;
+            background: rgba(255, 250, 240, 0.92);
+            border-radius: 32px;
+            padding: 60px;
+            box-shadow: 0 40px 90px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(14px);
+            animation: floatCard 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatCard {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-12px); }
+        }
+
+        /* ===== TITLE AREA ===== */
+        .title-wrapper {
+            text-align: center;
+            margin-bottom: 45px;
+            position: relative;
+        }
+
+        /* Soft glow behind title */
+        .title-wrapper::before {
+            content: "";
+            position: absolute;
+            width: 260px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(166,124,82,0.4), transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            filter: blur(25px);
+            z-index: 0;
+        }
+
+        .title {
+            font-weight: 700;
+            font-size: 2.4rem;
+            letter-spacing: 3px;
+            color: #5e4630;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Animated underline sweep */
+        .title-underline {
+            width: 120px;
+            height: 3px;
+            background: #8b6f47;
+            margin: 12px auto 0;
+            border-radius: 10px;
+            animation: underlineSlide 2s ease forwards;
+        }
+
+        @keyframes underlineSlide {
+            from { width: 0; opacity: 0; }
+            to { width: 120px; opacity: 1; }
+        }
+
+        /* ===== INPUT FIELD ===== */
+        .form-control {
+            border-radius: 50px;
+            border: none;
+            padding: 18px 25px;
+            background: #f3e7d3;
+            transition: all 0.45s cubic-bezier(.25,.8,.25,1);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 8px 25px rgba(166, 124, 82, 0.4);
+            background: #fffaf0;
+        }
+
+        /* ===== BUTTER BUTTON ===== */
+        .btn-earth {
+            border-radius: 50px;
+            background: #8b6f47;
+            color: white;
+            padding: 0 28px;
+            transition: all 0.45s cubic-bezier(.25,.8,.25,1);
+        }
+
+        .btn-earth:hover {
+            background: #6e5536;
+            transform: translateY(-4px) scale(1.04);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.25);
+        }
+
+        /* ===== TASK ITEMS ===== */
+        .task-item {
+            background: #f8efe2;
+            border-radius: 20px;
+            padding: 18px 22px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.45s cubic-bezier(.25,.8,.25,1);
+        }
+
+        .task-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        /* ===== ICON BUTTONS ===== */
+        .icon-btn {
+            border: none;
+            background: transparent;
+            color: #6e5536;
+            font-size: 1.2rem;
+            transition: all 0.4s cubic-bezier(.25,.8,.25,1);
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.25) rotate(6deg);
+            color: #a67c52;
+        }
+
+        /* Completed Style */
+        .completed {
+            text-decoration: line-through;
+            color: #b7a58e;
+        }
+
+        /* EMPTY STATE */
+        .empty {
+            text-align: center;
+            color: #8c7a66;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="journal-card">
+
+    <div class="title-wrapper">
+        <div class="title">
+            🌍 Todo Application
+        </div>
+        <div class="title-underline"></div>
+    </div>
+
+    <!-- Add Task -->
+    <form th:action="@{/}" method="post" class="mb-4">
+        <div class="input-group input-group-lg">
+            <input type="text"
+                   name="title"
+                   class="form-control"
+                   placeholder="Where are we heading next?"
+                   required>
+
+            <button class="btn btn-earth" type="submit">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
+    </form>
+
+    <!-- Empty State -->
+    <div th:if="${#lists.isEmpty(tasks)}" class="empty">
+        Your journey begins here…
+    </div>
+
+    <!-- Task List -->
+    <div th:each="task : ${tasks}" class="task-item">
+
+        <div>
+<span th:text="${task.title}"
+      th:classappend="${task.completed ? ' completed' : ''}">
+Task
+</span>
+        </div>
+
+        <div class="d-flex gap-3">
+
+            <a th:href="@{/{id}/toggle(id=${task.id})}" class="icon-btn">
+                <i class="bi"
+                   th:classappend="${task.completed ? ' bi-arrow-counterclockwise' : ' bi-check-circle'}"></i>
+            </a>
+
+            <a th:href="@{/{id}/delete(id=${task.id})}" class="icon-btn">
+                <i class="bi bi-trash"></i>
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
